@@ -1,0 +1,142 @@
+# estimates probability that the test docs are satire
+import util 
+import time
+import operator
+from scipy.stats import norm
+
+probs = {}
+classifiers = {}
+doclens = {}
+presence = {}
+scores = {}
+
+truedocs = []
+
+separator = 0
+
+r_n = 0			# recall denominator = # of results that should have been returned
+
+def prep(type):
+	global probs
+	global classifiers
+	global doclens
+	global truedocs
+
+	global r_n
+
+	probs = {}
+	classifiers = {}
+
+	# read classifiers
+	for line in open("/mit/rfong/Private/6.864/proj/corpus/"+type+"-class", "r"):
+		c = line.split(' ')
+		classifiers[c[0].split('-')[1]] = c[1].split('\n')[0]
+
+	in_doc = {}
+	r_n = 0
+	# read counts
+	tmp_probs = {}
+	for docid,c in classifiers.iteritems():
+		probs[docid] ={}
+		if c=="satire":
+			r_n += 1
+		if c=="true" or type=="test":
+			truedocs.append(docid)
+		tmp_probs[docid] = util.read_counts("data/bag/"+type+"/"+type+"-"+docid)
+		doclens[docid] = float(sum([c for c in tmp_probs[docid].values()]))
+		for w in tmp_probs[docid].keys():
+			probs[docid][w.lower()] = probs[docid].get(w,0.0)/doclens[docid] 
+		in_doc[docid] = {}
+		for w in probs[docid].keys():
+			in_doc[docid][w] = True
+
+def train():
+	# initialize counters
+	global presence
+	presence = {}
+	for docid in truedocs:
+#		if docid in probs: 
+		for w1 in probs[docid].keys():
+			presence[w1] = {}
+
+	# sum feature values
+	print "summing feature values..."
+	for docid in truedocs:
+		for w1 in probs[docid].keys():
+			for w2 in probs[docid].keys():
+				presence[w1][w2] = presence[w1].get(w2,0.0) + 1.0
+
+	# normalize
+	print "normalizing..."
+	for w1 in presence.keys(): 
+		for w2 in presence[w1].keys():
+			presence[w1][w2] /= len(doclens)
+
+def score(output_file, type):
+	fout = open(output_file, "w")
+
+	global scores;
+	scores = {}
+
+	# calculate probs!
+	print "calculating document irrelevance..."
+	for docid in classifiers.keys():
+		irr = 1
+		for w1 in probs[docid].keys():
+			if w1 in presence:
+				for w2 in probs[docid].keys():
+					if w2 in presence[w1]:
+						irr *= (1.0-presence[w1][w2])
+		irr = 1-(irr**0.1)
+		scores[docid] = irr
+		fout.write(type+"-"+docid + " " +str(irr) + "\n")
+
+
+def stats(class_out, plot_out, type):
+	# read probs
+	fout = open(class_out, "w")
+	plot = open(plot_out, "w")
+
+	ss = sorted(scores.iteritems(), key=operator.itemgetter(0), reverse=True)
+
+	if type=="training":
+		global separator
+		max_F = 0.0
+		satire_count = 0.0
+		satire_correct = 0.0
+		separator = 0.0
+		for (docid,score) in ss:
+			print docid + " " + str(score) + " " + classifiers[docid]
+			satire_count += 1.0
+			if classifiers[docid]=="satire":
+				satire_correct += 1.0
+			F = 2 * satire_correct / (r_n + satire_count)
+			if F > max_F:
+				max_F = F
+				separator = score
+		print "separator: " + str(separator)
+	
+	else:
+		classify = {}
+		plot_str = plot_out+"={"
+		for (docid,s) in ss:
+			if s>=separator:
+				classify[docid] = "satire"
+				plot_str += "{"+str(s)+",1},"
+			else:
+				classify[docid] = "true"
+				plot_str += "{"+str(s)+",-1},"
+		plot_str = plot_str[0:-1]+"}\n"
+		plot.write(plot_str)
+		for (docid,c) in sorted(classify.iteritems(), key=operator.itemgetter(0)):
+			fout.write(type+"-"+docid+" " + c + "\n")
+
+
+
+prep("training")
+train()
+score("topicality-probs-training", "training")
+stats("topicality-class-training", "topicality-plot-training", "training")
+prep("test")
+score("topicality-probs-test", "test")
+stats("topicality-class-test", "topicality-plot-test", "test")

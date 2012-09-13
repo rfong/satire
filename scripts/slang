@@ -1,0 +1,18 @@
+#!/bin/bash
+
+category="Informal"
+format="xmlfm"
+rm -rf tmp
+prev="A"
+for c in {B..Z} {a..z}; do
+	wget -q -O $category-$prev http://en.wiktionary.org/w/api.php?format=$format&action=query&list=categorymembers&cmtitle=Category:$category&cmlimit=500&cmsort=sortkey&cmstartsortkey=$prev&cmendsortkey=$c
+	prev=$c
+done
+wget -q -O $category-$prev http://en.wiktionary.org/w/api.php?format=$format&action=query&list=categorymembers&cmtitle=Category:$category&cmlimit=500&cmsort=sortkey&cmstartsortkey=$prev
+cat $category-* | grep pageid #| sed -n 's/.*title="\(.*\)".*/\1/p'
+
+
+#if [[ `cat tmp | grep wgCategories` =~ .*English.*(Informal|Slang).* ]]
+#then
+#	echo "true";
+#fi

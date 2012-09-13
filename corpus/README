@@ -1,0 +1,126 @@
+RESOURCE: Satire document classification
+
+
+
+
+VERSION: 1.0
+
+
+
+
+DESCRIPTION: 
+
+The basic task is this project is document filtering over newswire 
+documents, to remove "satire" documents and leave only the true
+newswire documents. We define a satirical document to be one which 
+deliberately makes fun of real-world individuals, organisations, and
+ events. An excerpt from a satire document in the training document
+ collection, e.g., is:
+
+
+   Struggling Air Force One To Begin Selling Passenger Tickets
+
+   Airforce One
+
+   08:00AM ET | WASHINGTON
+
+   To stay competitive, the airline will charge a fee of $25 for
+ passengers bringing extra luggage on board, such as fishing gear or a
+ Scottish terrier. more
+
+
+ while an except from a true newswire document is:
+
+
+   US, Cuba reach immigration accord to end exodus of Cubans NEW YORK,
+   Sept 9 (AFP)
+
+   The United States and Cuba announced an agreement Friday to halt the
+ exodus of Cuban refugees, possibly ending a major foreign policy
+ headache for President Bill Clinton.
+
+ The accord reached after a week of negotiations calls for expanded
+ legal immigration of Cubans into the United States, with Havana
+ agreeing to take action to stop emigrants from leaving illegally on
+ makeshift boats and rafts.
+
+
+
+
+DISCLAIMER: the satire documents are exactly that - satire. They are written
+to be provocative, with the intent of making light of various individuals,
+ institutions, and events. The opinions expressed within the documents in no way 
+express the official views of the University of Melbourne or any of its 
+employees, and my using them does not constitute endorsement of the views
+ expressed within.  I recognise that some people may find certain of the 
+documents in bad taste and possibly insulting, but please look beyond this to 
+the task at hand, i.e. document filtering, and understand that this is in no
+ way deliberate on my part - I have simply collected a sample of real-world
+ satire documents for the purposes of research.
+
+
+
+
+
+
+LICENSE:
+
+This dataset is made available under the terms of the Creative Commons
+ Attribution 3.0 Unported licence
+(http://creativecommons.org/licenses/by/3.0/), with attribution via citation 
+of the following paper, which describes the dataset in full detail: 
+
+Burfoot, Clint and Timothy Baldwin (2009) Automatic Satire Detection: Are You 
+Having a Laugh?, In Proceedings of the ACL-IJCNLP 2009 Conference Short
+Papers, Singapore, pp. 161¡½164.
+
+ The paper can be found at: 
+
+http://www.aclweb.org/anthology/P09-2041
+
+
+
+DATA SAMPLE:
+
+All data is made available in raw text, with a single instance (= document)
+per uniquely-named file. Separately, the document labels are listed in a
+single file each for the training and development documents ("training-class"
+and "test-class", resp.), of the form:
+
+training-0015 true
+training-0016 true
+training-0017 satire
+training-0018 true
+training-0019 true
+
+
+
+
+
+
+EVALUATION SCRIPT:
+
+To evaluate the output of your classifier over the test data in terms of
+ precision, recall and F-score (beta=1) relative to the satire class, use the
+ provided "eval.prl" script:
+
+ perl eval.prl  [-test [TEST-FILENAME]]  [-v]  -i FILENAME
+
+ where FILENAME contains the predictions of your classifier in the same format
+as described above for the data sample, namely:
+
+test-0015 true
+test-0016 true
+test-0017 satire
+test-0018 true
+test-0019 true
+
+
+
+
+
+CONTACT: 
+
+Clint Burfoot (clint.burfoot@gmail.com)
+Tim Baldwin (tb@ldwin.net)
+

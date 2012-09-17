@@ -16,6 +16,15 @@ separator = 0
 
 r_n = 0			# recall denominator = # of results that should have been returned
 
+def main():
+	prep("training")
+	train()
+	score("probabilities/topicality-training", "training")
+	stats("classifications/topicality-training", "topicality-plot-training", "training")
+	prep("test")
+	score("probabilities/topicality-test", "test")
+	stats("classifications/topicality-test", "topicality-plot-test", "test")
+
 def prep(type):
 	global probs
 	global classifiers
@@ -28,7 +37,7 @@ def prep(type):
 	classifiers = {}
 
 	# read classifiers
-	for line in open("/mit/rfong/Private/6.864/proj/corpus/"+type+"-class", "r"):
+	for line in open(util.projdir + "/corpus/"+type+"-class", "r"):
 		c = line.split(' ')
 		classifiers[c[0].split('-')[1]] = c[1].split('\n')[0]
 
@@ -42,7 +51,7 @@ def prep(type):
 			r_n += 1
 		if c=="true" or type=="test":
 			truedocs.append(docid)
-		tmp_probs[docid] = util.read_counts("data/bag/"+type+"/"+type+"-"+docid)
+		tmp_probs[docid] = util.read_counts("/data/bag/"+type+"/"+type+"-"+docid)
 		doclens[docid] = float(sum([c for c in tmp_probs[docid].values()]))
 		for w in tmp_probs[docid].keys():
 			probs[docid][w.lower()] = probs[docid].get(w,0.0)/doclens[docid] 
@@ -92,6 +101,7 @@ def score(output_file, type):
 		fout.write(type+"-"+docid + " " +str(irr) + "\n")
 
 
+# what the hell is this and why did i name it so generically
 def stats(class_out, plot_out, type):
 	# read probs
 	fout = open(class_out, "w")
@@ -118,25 +128,17 @@ def stats(class_out, plot_out, type):
 	
 	else:
 		classify = {}
-		plot_str = plot_out+"={"
+		data = []
 		for (docid,s) in ss:
 			if s>=separator:
 				classify[docid] = "satire"
-				plot_str += "{"+str(s)+",1},"
+				data.append([s,1])
 			else:
 				classify[docid] = "true"
-				plot_str += "{"+str(s)+",-1},"
-		plot_str = plot_str[0:-1]+"}\n"
-		plot.write(plot_str)
+				data.append([s,-1])
+		plot.write(json.dumps(data) + '\n')
 		for (docid,c) in sorted(classify.iteritems(), key=operator.itemgetter(0)):
 			fout.write(type+"-"+docid+" " + c + "\n")
 
 
-
-prep("training")
-train()
-score("topicality-probs-training", "training")
-stats("topicality-class-training", "topicality-plot-training", "training")
-prep("test")
-score("topicality-probs-test", "test")
-stats("topicality-class-test", "topicality-plot-test", "test")
+main()

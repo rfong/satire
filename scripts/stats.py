@@ -4,6 +4,7 @@
 
 import util
 import math
+import json
 
 # (prob / doc length) distribution
 def doclen(filename):
@@ -16,15 +17,15 @@ def doclen(filename):
 
 def map_len():
 	fin = open(util.projdir+"scripts/tmp", "r")
-	fout = open("maplen", "w")
+	fout = open("probabilities/maplen", "w")
 	docs = {}
 
-	fout.write("{ ")
+	data = []
 	for fields in [doc.split(' ') for doc in fin]:
 		x = fields[0]
 		docs[x] = ( (-1) * math.log(float(fields[1])) / math.log(10), int(fields[2]) )
-		fout.write("{"+str(docs[x][1])+","+str(docs[x][0])+"},")
-	fout.write(" }")
+		data.push([docs[x][1], docs[x][0]])
+	fout.write(json.dumps(data))
 
 map_len()
 #doclen("scripts/test-prob")

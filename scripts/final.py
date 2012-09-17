@@ -7,7 +7,7 @@ weight = {}
 cl = {}
 
 for f in features:
-	cl[f] = util.read_class("scripts/"+f+"-class-test")
+	cl[f] = util.read_class("scripts/classifications/"+f+"-test")
 	tpr = 0.0
 	fpr = 0.0
 	pos_class = 0
@@ -26,7 +26,7 @@ for f in features:
 	weight[f] = abs(norm.ppf(norm.cdf(tpr)) - norm.ppf(norm.cdf(fpr)))
 	print weight[f]
 
-fout = open("final-class", "w")
+fout = open("classifications/final", "w")
 for docid in classifiers.keys():
 	score = 0.0
 	for f in features:

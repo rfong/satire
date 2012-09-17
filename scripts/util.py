@@ -1,4 +1,6 @@
-projdir="/mit/rfong/Private/6.864/proj/"
+import os
+
+projdir = '/'.join(os.getcwd().split('/')[:-1] )
 
 # counts a bag of words
 def read_counts(filename):

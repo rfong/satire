@@ -1,6 +1,7 @@
 import util
 import time
 import operator
+import json
 
 counts = {}			# docids to dictionary of word counts
 classifiers = {}# docids to "true", "satire"
@@ -26,7 +27,7 @@ def prep(type):
 	classifiers = {}
 
 	# read classifiers
-	for line in open("/mit/rfong/Private/6.864/proj/corpus/"+type+"-class", "r"):
+	for line in open(util.projdir + "/corpus/"+type+"-class", "r"):
 		c = line.split(' ')
 		classifiers[c[0].split('-')[1]] = c[1].split('\n')[0]
 	for docid,c in classifiers.iteritems():
@@ -39,7 +40,7 @@ def prep(type):
 		"training": [util.format(i) for i in range(1,2638+1)]
 	}
 	for docid in docids[type]:
-		tmpcounts = util.read_counts_nopos("data/bag/"+type+"/"+type+"-"+docid)
+		tmpcounts = util.read_counts_nopos("/data/bag/"+type+"/"+type+"-"+docid)
 		counts[docid] = {}
 		for w,c in tmpcounts.iteritems():
 			counts[docid][w.lower()] = c
@@ -88,15 +89,13 @@ def stats(vocab_file, class_out, probs_out, type):
 
 	# print probabilities
 	probs_out = open(probs_out, "w")
-	pts = "{"
+	pts = []
 	for (docid,s) in new_scores:
-		pts += "{" + str(s) + ","
 		if classifiers[docid]=="satire":
-			pts += "1"
+			pts.append([s,1])
 		else:
-			pts += "-1"
-		pts += "},"
-	probs_out.write(pts[0:-1]+"};\n")
+			pts.append([s,-1])
+	probs_out.write(json.dumps(pts))
 	probs_out.write("separator="+str(separator))
 #		f.write(type+"-"+docid + " %f\n"%s)
 	
@@ -170,17 +169,15 @@ def slang_slow(in_vocab, docid):
 	score = 0.0
 	# doc is bigger than vocabulary
 	if len(in_vocab) > len(counts[docid]):
-		for w in in_vocab.keys():
-			score += counts[docid].get(w, 0)
+		score = sum( counts[docid].get(w,0) for w in in_vocab.keys() )
 	# vocabulary is bigger than doc
 	else:
-		for w,c in counts[docid].iteritems():
-			score += c * in_vocab.get(w, False)
+		score = sum( c*in_vocab.get(w,False) for w,c in counts[docid].iteritems() )
 	return score / doclens[docid]
 
 # measures scoring accuracy
 # RETURN float in range [0.0, 1.0]
-#  w: a new word 
+#  w: a new word
 def accuracy(w): 
 #	in_vocab = {}
 #	for v in vocab:

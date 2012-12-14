@@ -1,0 +1,4 @@
+satire
+======
+
+lexical satire detection

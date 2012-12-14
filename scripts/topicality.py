@@ -1,5 +1,5 @@
 # estimates probability that the test docs are satire
-import util 
+import util, json
 import time
 import operator
 from scipy.stats import norm
@@ -99,6 +99,8 @@ def score(output_file, type):
 		irr = 1-(irr**0.1)
 		scores[docid] = irr
 		fout.write(type+"-"+docid + " " +str(irr) + "\n")
+		#scores[docid] = irr
+	#fout.write(json.dumps(scores))
 
 
 # what the hell is this and why did i name it so generically
@@ -116,7 +118,7 @@ def stats(class_out, plot_out, type):
 		satire_correct = 0.0
 		separator = 0.0
 		for (docid,score) in ss:
-			print docid + " " + str(score) + " " + classifiers[docid]
+			#print docid + " " + str(score) + " " + classifiers[docid]
 			satire_count += 1.0
 			if classifiers[docid]=="satire":
 				satire_correct += 1.0
